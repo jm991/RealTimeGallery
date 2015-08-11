@@ -26,5 +26,10 @@ namespace GalleryApp_Windows
         {
             this.InitializeComponent();
         }
+
+        private void AppBarButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

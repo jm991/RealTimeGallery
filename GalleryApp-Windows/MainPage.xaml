@@ -8,6 +8,8 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+        <CommandBar>
+            <AppBarButton Label="Add" Icon="Add" Click="AppBarButton_Click"/>
+        </CommandBar>
     </Grid>
 </Page>

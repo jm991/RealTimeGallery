@@ -26,6 +26,8 @@ namespace GalleryApp_Android
 		
 		public static void UpdateIdValues()
 		{
+			global::GalleryApp.Core.Android.Resource.String.ApplicationName = global::GalleryApp_Android.Resource.String.ApplicationName;
+			global::GalleryApp.Core.Android.Resource.String.Hello = global::GalleryApp_Android.Resource.String.Hello;
 		}
 		
 		public partial class Attribute
@@ -64,7 +66,10 @@ namespace GalleryApp_Android
 		{
 			
 			// aapt resource value: 0x7f060000
-			public const int MyButton = 2131099648;
+			public const int myButton = 2131099648;
+			
+			// aapt resource value: 0x7f060001
+			public const int myImageView = 2131099649;
 			
 			static Id()
 			{

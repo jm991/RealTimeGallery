@@ -27,7 +27,7 @@ namespace GalleryAppiOS
             };
         }
 
-        public override void ViewDidLoad()
+        public override async void ViewDidLoad()
         {
             base.ViewDidLoad();
 
@@ -44,14 +44,14 @@ namespace GalleryAppiOS
                     foreach (var url in urls)
                     {
                         _imageSection.Add(
-                            new ImageStringElement(DateTime.Now.ToString(), 
+                            new ImageStringElement(DateTime.Now.ToString(),
                                                    UIImage.LoadFromData(NSData.FromUrl(new NSUrl(url))))
                         );
                     }
                 });
             };
 
-            _listener.StartListening();
+            await _listener.StartListening();
         }
 
         private void UploadPicture()
@@ -59,7 +59,7 @@ namespace GalleryAppiOS
             _picker = new UIImagePickerController();
             _picker.SourceType = UIImagePickerControllerSourceType.PhotoLibrary;
             _picker.Canceled += delegate { _picker.DismissViewController(true, null); };
-            _picker.FinishedPickingMedia += (s, e) =>
+            _picker.FinishedPickingMedia += async (s, e) =>
             {
                 _picker.DismissViewController(true, null);
                 var image = (UIImage)e.Info.ObjectForKey(new NSString("UIImagePickerControllerOriginalImage"));
@@ -70,7 +70,7 @@ namespace GalleryAppiOS
                     Marshal.Copy(imageData.Bytes, bytes, 0, Convert.ToInt32(imageData.Length));
                 }
 
-                _uploader.UploadPhoto(bytes, "jpg");
+                await _uploader.UploadPhoto(bytes, "jpg");
             };
 
             PresentViewController(_picker, true, null);

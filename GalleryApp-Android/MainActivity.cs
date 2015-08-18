@@ -5,7 +5,8 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.OS;
-//using GalleryApp.Core;
+using GalleryApp.Core;
+using System.Threading;
 
 namespace GalleryApp_Android
 {
@@ -14,11 +15,11 @@ namespace GalleryApp_Android
     {
         private const string UploadUrl = "http://192.168.1.103/api/photo";
 
-        //private PhotoUploader _uploader;
-        //private PhotoListener _listener;
-        //private ImageView _imageSection;
+        private PhotoUploader _uploader;
+        private PhotoListener _listener;
+        private ImageView _imageSection;
 
-        protected override void OnCreate(Bundle bundle)
+        protected override async void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
@@ -29,13 +30,42 @@ namespace GalleryApp_Android
             // and attach an event to it
             Button button = FindViewById<Button>(Resource.Id.myButton);
 
-            button.Click += delegate {
+            button.Click += delegate
+            {
                 var imageIntent = new Intent();
                 imageIntent.SetType("image/*");
                 imageIntent.SetAction(Intent.ActionGetContent);
                 StartActivityForResult(
                     Intent.CreateChooser(imageIntent, "Select photo"), 0);
             };
+
+
+            _uploader = new PhotoUploader();
+            _listener = new PhotoListener();
+
+            _listener.NewPhotosReceived += (sender, urls) =>
+            {
+                ThreadPool.QueueUserWorkItem(o =>
+                {
+                    foreach (var url in urls)
+                    {
+                        /*// Replace this iOS code
+                        _imageSection.Add(
+                            new ImageStringElement(DateTime.Now.ToString(),
+                                                   UIImage.LoadFromData(NSData.FromUrl(new NSUrl(url))))
+                        );
+
+                        // With this, but tailored to load from URL and replace ImageView with http://android-er.blogspot.com/2010/06/listview-with-icon.html
+                        _imageSection =
+                            FindViewById<ImageView>(Resource.Id.myImageView);
+                        _imageSection.SetImageURI(data.Data);
+                        */
+
+                    }
+                });
+            };
+
+            await _listener.StartListening();
         }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
@@ -44,40 +74,24 @@ namespace GalleryApp_Android
 
             if (resultCode == Result.Ok)
             {
-                var imageView =
+                _imageSection =
                     FindViewById<ImageView>(Resource.Id.myImageView);
-                imageView.SetImageURI(data.Data);
+                _imageSection.SetImageURI(data.Data);
+
+                
+                byte[] bytes;
+                using (var imageData = _imageSection.AsJPEG())
+                {
+                    bytes = new byte[imageData.Length];
+                    Marshal.Copy(imageData.Bytes, bytes, 0, Convert.ToInt32(imageData.Length));
+                }
+
+                //        await _uploader.UploadPhoto(bytes, "jpg");
+
             }
         }
 
-
-        //public override async void ViewDidLoad()
-        //{
-        //    base.ViewDidLoad();
-
-        //    NavigationItem.RightBarButtonItem = new UIBarButtonItem(UIBarButtonSystemItem.Add);
-        //    NavigationItem.RightBarButtonItem.Clicked += delegate { UploadPicture(); };
-
-        //    _uploader = new PhotoUploader();
-        //    _listener = new PhotoListener();
-
-        //    _listener.NewPhotosReceived += (sender, urls) =>
-        //    {
-        //        InvokeOnMainThread(() =>
-        //        {
-        //            foreach (var url in urls)
-        //            {
-        //                _imageSection.Add(
-        //                    new ImageStringElement(DateTime.Now.ToString(),
-        //                                           UIImage.LoadFromData(NSData.FromUrl(new NSUrl(url))))
-        //                );
-        //            }
-        //        });
-        //    };
-
-        //    await _listener.StartListening();
-        //}
-
+        // Note: merge this method into OnActivityResult
         //private void UploadPicture()
         //{
         //    _picker = new UIImagePickerController();
